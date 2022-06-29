@@ -1,10 +1,10 @@
 <?php
 
- if (empty($_POST["fname"])) {
+if (empty($_POST["fname"])) {
     die("Name is required");
 }
 
-if ( ! filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
+if (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
     die("Valid email is required");
 }
 
@@ -12,11 +12,11 @@ if (strlen($_POST["password"]) < 8) {
     die("Password must be at least 8 characters");
 }
 
-if ( ! preg_match("/[a-z]/i", $_POST["password"])) {
+if (!preg_match("/[a-z]/i", $_POST["password"])) {
     die("Password must contain at least one letter");
 }
 
-if ( ! preg_match("/[0-9]/", $_POST["password"])) {
+if (!preg_match("/[0-9]/", $_POST["password"])) {
     die("Password must contain at least one number");
 }
 
@@ -28,35 +28,17 @@ $password_hash = password_hash($_POST["password"], PASSWORD_DEFAULT);
 
 $mysqli = require __DIR__ . "/database.php";
 
-$sql = "INSERT INTO users (firstname, lastname,  email, password, gender, phone ,dob)
-        VALUES (?, ?, ?, ?, ?,? ,? )";
-        
-$stmt = $mysqli->stmt_init();
+$fname = $_POST["fname"];
+$lname = $_POST["lname"];
+$email = $_POST["email"];
+$gender = $_POST["gender"];
+$phone = $_POST["phone_number"];
+$dob = $_POST["dob"];
 
-if ( ! $stmt->prepare($sql)) {
+$sql = "INSERT INTO users (firstname, lastname, email, password, gender, phone ,dob) VALUES ('$fname', '$lname', '$email', '$password_hash', '$gender', '$phone' , '$dob')";
+
+if (!$mysqli->query($sql)) {
     die("SQL error: " . $mysqli->error);
-}
-
-$stmt->bind_param("sss",
-                  $_POST["firstname"],
-                  $_POST["lastname"],
-                  $_POST["email"],
-                  $_POST["password"],
-                  $_POST["gender"],
-                  $_POST["phone"],
-                  $_POST["dob"],
-                  $password_hash);
-                  
-if ($stmt->execute()) {
-
-    header("Location: signup-success.html");
-    exit;
-    
 } else {
-    
-    if ($mysqli->errno === 1062) {
-        die("email already taken");
-    } else {
-        die($mysqli->error . " " . $mysqli->errno);
-    }
+    header("Location: signup-success.html");
 }
